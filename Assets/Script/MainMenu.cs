@@ -9,4 +9,9 @@ public class MAinMenu : MonoBehaviour
         SceneManager.LoadSceneAsync("Loading");
     }
 
+    public void QuitGame()
+    {
+        Application.Quit();
+    }
+
 }
