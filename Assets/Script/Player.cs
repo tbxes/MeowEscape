@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -8,35 +9,59 @@ public class PlayerController : MonoBehaviour
     public float laneSpeed = 8f;
 
     [Header("Jump Settings")]
-    public float jumpForce = 8f;   // แรงกระโดด (ปรับเพิ่มได้ตามใจชอบ)
-    public float groundY = 1.5f;   // ระดับความสูง Y ตอนยืนบนพื้นพอดี
+    public float jumpForce = 8f;
+    public float groundY = 1.5f;
 
     private Rigidbody rb;
+    private float currentSpeed;
+    private bool isSlowed = false;
+    private bool isGameOver = false;
+    private bool wasTimePaused = true; // ตัวแปรเช็คสถานะการหยุดเวลา
 
     void Start()
     {
         rb = GetComponent<Rigidbody>();
+        if (rb != null)
+        {
+            rb.freezeRotation = true; // ล็อกไม่ให้ตัวละครหมุนล้ม
+        }
+        currentSpeed = forwardSpeed;
     }
 
     void Update()
     {
-        // 1. เช็คง่ายๆ ว่ายืนอยู่บนพื้นหรือไม่ (ถ้า Y อยู่ใกล้เคียง 1.5 แปลว่ายืนบนพื้น)
+        if (isGameOver) return;
+
+        // 1. ถ้าเกมยังหยุดเวลาอยู่ (เช่น กำลังขึ้นหน้า Intro) ไม่ต้องประมวลผลใดๆ
+        if (Time.timeScale == 0f)
+        {
+            wasTimePaused = true;
+            return;
+        }
+
+        // 2. ป้องกันการกระโดดทันที: ข้าม 1 เฟรมแรกหลังจากเพิ่งเริ่มเกม เพื่อไม่ให้ปุ่ม Spacebar จากหน้า Intro หลุดมา
+        if (wasTimePaused)
+        {
+            wasTimePaused = false;
+            return;
+        }
+
+        // 3. เช็คว่ายืนอยู่บนพื้นหรือไม่
         bool isGrounded = transform.position.y <= (groundY + 0.1f);
 
-        // 2. กด Spacebar เพื่อกระโดด (ทำงานเฉพาะตอนยืนบนพื้น)
+        // 4. กด Spacebar กระโดด (ทำงานเฉพาะตอนเกมเดินแล้วเท่านั้น)
         if (isGrounded && Keyboard.current != null)
         {
             if (Keyboard.current.spaceKey.wasPressedThisFrame)
             {
-                // ส่งแรงกระโดดขึ้นฟ้าทันที
                 rb.linearVelocity = new Vector3(rb.linearVelocity.x, jumpForce, rb.linearVelocity.z);
             }
         }
 
-        // 3. คำนวณการวิ่งไปข้างหน้า (แกน Z)
-        float newZ = transform.position.z + (forwardSpeed * Time.deltaTime);
+        // 5. คำนวณการวิ่งไปข้างหน้า (แกน Z)
+        float newZ = transform.position.z + (currentSpeed * Time.deltaTime);
 
-        // 4. รับค่าการกดปุ่ม ซ้าย / ขวา (A / D)
+        // 6. รับค่าการกดปุ่ม ซ้าย / ขวา (A / D)
         float horizontalInput = 0f;
         if (Keyboard.current != null)
         {
@@ -50,10 +75,41 @@ public class PlayerController : MonoBehaviour
             }
         }
 
-        // 5. คำนวณแกน X ขยับซ้าย-ขวา
+        // 7. คำนวณแกน X ขยับซ้าย-ขวา
         float newX = transform.position.x + (horizontalInput * laneSpeed * Time.deltaTime);
 
-        // 6. อัปเดตตำแหน่งจริง (ปล่อยให้แรงโน้มถ่วงจัดการแกน Y ตอนลอยตัว)
+        // 8. อัปเดตตำแหน่งจริง
         transform.position = new Vector3(newX, transform.position.y, newZ);
+    }
+
+    // ตรวจจับการชน
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.CompareTag("Obstacle") && !isSlowed)
+        {
+            StartCoroutine(SlowDownRoutine());
+        }
+        else if (other.CompareTag("Boss"))
+        {
+            GameOver();
+        }
+    }
+
+    private IEnumerator SlowDownRoutine()
+    {
+        isSlowed = true;
+        currentSpeed = forwardSpeed * 0.3f; // สโลว์ความเร็วเมื่อชน
+
+        yield return new WaitForSeconds(1.5f);
+
+        currentSpeed = forwardSpeed;
+        isSlowed = false;
+    }
+
+    void GameOver()
+    {
+        isGameOver = true;
+        Time.timeScale = 0f; // หยุดเวลาในเกมทันที
+        Debug.Log("GAME OVER! โดนบอสจับได้แล้ว!");
     }
 }
