@@ -9,24 +9,25 @@ public class UIManager : MonoBehaviour
     [Header("UI Elements")]
     [SerializeField] private TMP_Text notiText;
     [SerializeField] private GameObject restartButton;
+    [SerializeField] private GameObject nextSceneButton; 
 
     [Header("Player Reference")]
     [SerializeField] private Player player;
 
     private void Awake()
     {
-        // กำหนด Singleton Instance
         Instance = this;
     }
 
     private void Start()
     {
-        // ปิดปุ่ม Restart และล้างข้อความแจ้งเตือนตอนเริ่มเกม
+        
         ShowHideRestartButton(false);
+        ShowHideNextSceneButton(false);
         ShowNotiText("");
     }
 
-    // ฟังก์ชันแสดงข้อความ UI
+   
     public void ShowNotiText(string s)
     {
         if (notiText != null)
@@ -35,7 +36,7 @@ public class UIManager : MonoBehaviour
         }
     }
 
-    // ฟังก์ชันเปิด/ปิด ปุ่ม Restart
+    
     public void ShowHideRestartButton(bool flag)
     {
         if (restartButton != null)
@@ -44,28 +45,45 @@ public class UIManager : MonoBehaviour
         }
     }
 
-    // เรียกตอนโดน Boss จับได้ (Game Over)
+    
+    public void ShowHideNextSceneButton(bool flag)
+    {
+        if (nextSceneButton != null)
+        {
+            nextSceneButton.SetActive(flag);
+        }
+    }
+
+    
     public void TriggerGameOver()
     {
-        Time.timeScale = 0f; // หยุดเวลาในเกม
+        Time.timeScale = 0f;
         ShowNotiText("GAME OVER!");
         ShowHideRestartButton(true);
+        ShowHideNextSceneButton(false);
     }
 
-    // เรียกตอนวิ่งเข้าประตูชัย (Stage Clear)
+    
     public void TriggerStageClear()
     {
-        Time.timeScale = 0f; // หยุดเวลาในเกม
+        Time.timeScale = 0f;
         ShowNotiText("STAGE CLEAR!");
-        ShowHideRestartButton(true);
+        ShowHideRestartButton(false); 
+        ShowHideNextSceneButton(true);  
     }
 
-    // ฟังก์ชัน Restart เกม
+    
     public void RestartGame()
     {
-        Time.timeScale = 1f; 
-
-        
+        Time.timeScale = 1f;
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+    }
+
+    
+    public void GoToNextScene()
+    {
+        Time.timeScale = 1f;
+        
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
     }
 }
