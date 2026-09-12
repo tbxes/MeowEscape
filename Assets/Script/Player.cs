@@ -89,12 +89,20 @@ public class Player : MonoBehaviour
         }
     }
 
-    
+
 
     void GameOver()
     {
         isGameOver = true;
-        Time.timeScale = 0f; 
-        Debug.Log("GAME OVER! โดนบอสจับได้แล้ว!");
+
+        
+        if (UIManager.Instance != null)
+        {
+            UIManager.Instance.TriggerGameOver();
+        }
+        else
+        {
+            Time.timeScale = 0f;
+        }
     }
 }
