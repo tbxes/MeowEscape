@@ -1,7 +1,8 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
-using TMPro; // เพิ่มการใช้งาน TextMeshPro
+using UnityEngine.SceneManagement; // นำเข้า SceneManager สำหรับ Restart ฉาก
+using TMPro;
 
 public class PlayerMovement02 : MonoBehaviour
 {
@@ -11,19 +12,32 @@ public class PlayerMovement02 : MonoBehaviour
     [Header("Shooting Settings")]
     public GameObject bulletPrefab;
     public Transform gunMuzzle;
-    public float fireCooldown = 0.4f;
+    public float fireCooldown = 0.6f;
     private float nextFireTime = 0f;
 
     [Header("Player Health Settings")]
     public int maxHealth = 5;
     private int currentHealth;
     public Slider playerHealthSlider;
-    public TMP_Text playerHealthText; // <--- ลาก PlayerHealthText มาใส่ตรงนี้
+    public TMP_Text playerHealthText;
+
+    [Header("Game Over UI")]
+    public GameObject gameOverPanel; // ลาก GameOverPanel มาใส่ตรงนี้
+    public Button restartButton;     // ลาก RestartButton มาใส่ตรงนี้
 
     void Start()
     {
         currentHealth = maxHealth;
         UpdateHealthUI();
+
+        // ซ่อนหน้า GameOverPanel ไว้ตอนเริ่มเกม
+        if (gameOverPanel != null) gameOverPanel.SetActive(false);
+
+        // ผูกคำสั่งปุ่ม Restart
+        if (restartButton != null)
+        {
+            restartButton.onClick.AddListener(RestartGame);
+        }
     }
 
     void Update()
@@ -67,22 +81,11 @@ public class PlayerMovement02 : MonoBehaviour
 
             if (currentHealth <= 0)
             {
-                Debug.Log("💀 Game Over!");
-
-                // ปิดการแสดงผลภาพและ Collider โดยไม่ซ่อนทั้ง GameObject (กล้องจะไม่ดับ)
-                Renderer[] renderers = GetComponentsInChildren<Renderer>();
-                foreach (Renderer r in renderers)
-                {
-                    r.enabled = false;
-                }
-
-                if (GetComponent<Collider>()) GetComponent<Collider>().enabled = false;
-                this.enabled = false;
+                GameOver();
             }
         }
     }
 
-    // ฟังก์ชันอัปเดตหลอดเลือดและตัวเลข HP
     void UpdateHealthUI()
     {
         if (playerHealthSlider != null)
@@ -94,5 +97,32 @@ public class PlayerMovement02 : MonoBehaviour
         {
             playerHealthText.text = currentHealth + " / " + maxHealth;
         }
+    }
+
+    void GameOver()
+    {
+        Debug.Log("💀 Game Over!");
+
+        // ซ่อนโมเดล Player
+        Renderer[] renderers = GetComponentsInChildren<Renderer>();
+        foreach (Renderer r in renderers)
+        {
+            r.enabled = false;
+        }
+
+        if (GetComponent<Collider>()) GetComponent<Collider>().enabled = false;
+
+        // แสดงหน้า GameOverPanel และหยุดเวลาในเกม
+        if (gameOverPanel != null) gameOverPanel.SetActive(true);
+        Time.timeScale = 0f;
+
+        this.enabled = false;
+    }
+
+    // ฟังก์ชันสำหรับเริ่มเกมใหม่
+    public void RestartGame()
+    {
+        Time.timeScale = 1f; // คืนค่าเวลาในเกมเป็นปกติก่อนโหลดฉากใหม่
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name); // โหลดฉากปัจจุบันใหม่
     }
 }
