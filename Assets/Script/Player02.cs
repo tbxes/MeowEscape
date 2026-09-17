@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.UI; // นำเข้าไลบรารีสำหรับควบคุม UI
+using UnityEngine.UI;
+using TMPro; // เพิ่มการใช้งาน TextMeshPro
 
 public class PlayerMovement02 : MonoBehaviour
 {
@@ -16,7 +17,8 @@ public class PlayerMovement02 : MonoBehaviour
     [Header("Player Health Settings")]
     public int maxHealth = 5;
     private int currentHealth;
-    public Slider playerHealthSlider; // <--- ลาก Slider หลอดเลือดผู้เล่นมาใส่ที่นี่
+    public Slider playerHealthSlider;
+    public TMP_Text playerHealthText; // <--- ลาก PlayerHealthText มาใส่ตรงนี้
 
     void Start()
     {
@@ -53,30 +55,44 @@ public class PlayerMovement02 : MonoBehaviour
         }
     }
 
-    // 3. รับดาเมจเมื่อโดนกระสุนบอส
     void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("BossBullet"))
         {
             currentHealth -= 1;
-            UpdateHealthUI();
+            if (currentHealth < 0) currentHealth = 0;
 
+            UpdateHealthUI();
             Destroy(other.gameObject);
 
             if (currentHealth <= 0)
             {
                 Debug.Log("💀 Game Over!");
-                gameObject.SetActive(false);
+
+                // ปิดการแสดงผลภาพและ Collider โดยไม่ซ่อนทั้ง GameObject (กล้องจะไม่ดับ)
+                Renderer[] renderers = GetComponentsInChildren<Renderer>();
+                foreach (Renderer r in renderers)
+                {
+                    r.enabled = false;
+                }
+
+                if (GetComponent<Collider>()) GetComponent<Collider>().enabled = false;
+                this.enabled = false;
             }
         }
     }
 
-    // ฟังก์ชันอัปเดตหลอดเลือด UI
+    // ฟังก์ชันอัปเดตหลอดเลือดและตัวเลข HP
     void UpdateHealthUI()
     {
         if (playerHealthSlider != null)
         {
             playerHealthSlider.value = (float)currentHealth / maxHealth;
+        }
+
+        if (playerHealthText != null)
+        {
+            playerHealthText.text = currentHealth + " / " + maxHealth;
         }
     }
 }

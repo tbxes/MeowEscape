@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 public class Boss02 : MonoBehaviour
 {
@@ -7,7 +8,8 @@ public class Boss02 : MonoBehaviour
     public int maxHealth = 10;
     private int currentHealth;
     public Slider bossHealthSlider;
-    public float healthBarSmoothSpeed = 5f; // ความเร็วในการสไลด์ลดของหลอดเลือด
+    public TMP_Text healthText;
+    public float healthBarSmoothSpeed = 5f;
 
     private float targetSliderValue = 1f;
 
@@ -26,23 +28,35 @@ public class Boss02 : MonoBehaviour
         targetSliderValue = 1f;
         if (bossHealthSlider != null) bossHealthSlider.value = 1f;
 
+        UpdateHealthUI();
         SetRandomInterval();
     }
 
     void Update()
     {
-        // 1. ระบบอนิเมชันหลอดเลือดค่อยๆ สไลด์ลดลงอย่างนุ่มนวล
+        // อนิเมชันหลอดเลือดสไลด์ลดลง
         if (bossHealthSlider != null)
         {
-            bossHealthSlider.value = Mathf.Lerp(bossHealthSlider.value, targetSliderValue, Time.deltaTime * healthBarSmoothSpeed);
+            // ถ้าเป้าหมายคือ 0 ให้เซ็ตเป็น 0 ทันที ไม่ค้างติ่ง Lerp
+            if (targetSliderValue <= 0f)
+            {
+                bossHealthSlider.value = 0f;
+            }
+            else
+            {
+                bossHealthSlider.value = Mathf.Lerp(bossHealthSlider.value, targetSliderValue, Time.deltaTime * healthBarSmoothSpeed);
+            }
         }
 
-        // 2. นับเวลาสุ่มยิงกระสุน
-        attackTimer -= Time.deltaTime;
-        if (attackTimer <= 0f)
+        // นับเวลาสุ่มยิงกระสุน (ทำงานเฉพาะตอนเกมยังไม่หยุด)
+        if (Time.timeScale > 0f)
         {
-            AttackPlayer();
-            SetRandomInterval();
+            attackTimer -= Time.deltaTime;
+            if (attackTimer <= 0f)
+            {
+                AttackPlayer();
+                SetRandomInterval();
+            }
         }
     }
 
@@ -65,19 +79,34 @@ public class Boss02 : MonoBehaviour
     public void TakeDamage(int damage)
     {
         currentHealth -= damage;
+        if (currentHealth < 0) currentHealth = 0;
 
-        // คำนวณเป้าหมายหลอดเลือดใหม่ เพื่อให้ Update ค่อยๆ เลื่อนหลอดเลือดไปหาจุดนี้
         targetSliderValue = (float)currentHealth / maxHealth;
+
+        // อัปเดตข้อความตัวเลขเมื่อโดนยิง
+        UpdateHealthUI();
 
         if (currentHealth <= 0)
         {
+            targetSliderValue = 0f;
+            if (bossHealthSlider != null) bossHealthSlider.value = 0f; // เซ็ตหลอดเลือดเป็น 0 ทันที
+
             Die();
+        }
+    }
+
+    void UpdateHealthUI()
+    {
+        if (healthText != null)
+        {
+            healthText.text = currentHealth + " / " + maxHealth;
         }
     }
 
     void Die()
     {
         Debug.Log("💀 บอสพ่ายแพ้แล้ว!");
+        Time.timeScale = 0f; // หยุดเกม
         gameObject.SetActive(false);
     }
 }
