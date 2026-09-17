@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.UI; // นำเข้าไลบรารีสำหรับควบคุม UI
 
 public class PlayerMovement02 : MonoBehaviour
 {
@@ -15,16 +16,17 @@ public class PlayerMovement02 : MonoBehaviour
     [Header("Player Health Settings")]
     public int maxHealth = 5;
     private int currentHealth;
+    public Slider playerHealthSlider; // <--- ลาก Slider หลอดเลือดผู้เล่นมาใส่ที่นี่
 
     void Start()
     {
         currentHealth = maxHealth;
-        Debug.Log("Player HP: " + currentHealth);
+        UpdateHealthUI();
     }
 
     void Update()
     {
-        // 1. ระบบเดินซ้าย-ขวา
+        // 1. เดินซ้าย-ขวา
         float moveInput = 0f;
         if (Keyboard.current != null)
         {
@@ -35,7 +37,7 @@ public class PlayerMovement02 : MonoBehaviour
         }
         transform.Translate(Vector3.right * moveInput * moveSpeed * Time.deltaTime);
 
-        // 2. ระบบยิงปืน
+        // 2. ยิงปืน
         if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame && Time.time >= nextFireTime)
         {
             Shoot();
@@ -51,21 +53,30 @@ public class PlayerMovement02 : MonoBehaviour
         }
     }
 
-    // 3. ระบบรับดาเมจเมื่อโดนกระสุนบอส
+    // 3. รับดาเมจเมื่อโดนกระสุนบอส
     void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("BossBullet"))
         {
             currentHealth -= 1;
-            Debug.Log("💥 ผู้เล่นโดนยิง! เลือดเหลือ: " + currentHealth);
+            UpdateHealthUI();
 
-            Destroy(other.gameObject); // ทำลายกระสุนบอสทิ้ง
+            Destroy(other.gameObject);
 
             if (currentHealth <= 0)
             {
-                Debug.Log("💀 ผู้เล่นพ่ายแพ้แล้ว (Game Over)!");
-                gameObject.SetActive(false); // ซ่อนผู้เล่น
+                Debug.Log("💀 Game Over!");
+                gameObject.SetActive(false);
             }
+        }
+    }
+
+    // ฟังก์ชันอัปเดตหลอดเลือด UI
+    void UpdateHealthUI()
+    {
+        if (playerHealthSlider != null)
+        {
+            playerHealthSlider.value = (float)currentHealth / maxHealth;
         }
     }
 }

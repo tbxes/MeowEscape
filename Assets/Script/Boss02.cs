@@ -1,30 +1,43 @@
 using UnityEngine;
+using UnityEngine.UI;
 
-public class BossController02 : MonoBehaviour
+public class Boss02 : MonoBehaviour
 {
     [Header("Boss Health")]
     public int maxHealth = 10;
     private int currentHealth;
+    public Slider bossHealthSlider;
+    public float healthBarSmoothSpeed = 5f; // ความเร็วในการสไลด์ลดของหลอดเลือด
+
+    private float targetSliderValue = 1f;
 
     [Header("Boss Attack Settings")]
-    public GameObject bossBulletPrefab; // ลาก Prefab กระสุนบอสมาใส่
-    public Transform bossMuzzle;        // จุดยิงของบอส
-    public Transform player;            // ลาก Player02 มาใส่
+    public GameObject bossBulletPrefab;
+    public Transform bossMuzzle;
+    public Transform player;
 
-    public float minInterval = 1.5f;    // สุ่มเว้นระยะเร็วสุด
-    public float maxInterval = 3.0f;    // สุ่มเว้นระยะช้าสุด
+    public float minInterval = 1.5f;
+    public float maxInterval = 3.0f;
     private float attackTimer;
 
     void Start()
     {
         currentHealth = maxHealth;
+        targetSliderValue = 1f;
+        if (bossHealthSlider != null) bossHealthSlider.value = 1f;
+
         SetRandomInterval();
-        Debug.Log("Boss HP: " + currentHealth);
     }
 
     void Update()
     {
-        // นับเวลาสุ่มยิง
+        // 1. ระบบอนิเมชันหลอดเลือดค่อยๆ สไลด์ลดลงอย่างนุ่มนวล
+        if (bossHealthSlider != null)
+        {
+            bossHealthSlider.value = Mathf.Lerp(bossHealthSlider.value, targetSliderValue, Time.deltaTime * healthBarSmoothSpeed);
+        }
+
+        // 2. นับเวลาสุ่มยิงกระสุน
         attackTimer -= Time.deltaTime;
         if (attackTimer <= 0f)
         {
@@ -37,11 +50,9 @@ public class BossController02 : MonoBehaviour
     {
         if (bossBulletPrefab && bossMuzzle && player)
         {
-            // หันหน้าเล็งไปที่ผู้เล่น
             Vector3 targetDir = player.position - bossMuzzle.position;
             bossMuzzle.rotation = Quaternion.LookRotation(targetDir);
 
-            // สร้างกระสุนบอส
             Instantiate(bossBulletPrefab, bossMuzzle.position, bossMuzzle.rotation);
         }
     }
@@ -51,11 +62,12 @@ public class BossController02 : MonoBehaviour
         attackTimer = Random.Range(minInterval, maxInterval);
     }
 
-    // ฟังก์ชันรับดาเมจจากผู้เล่น
     public void TakeDamage(int damage)
     {
         currentHealth -= damage;
-        Debug.Log("🔥 Boss02 โดนยิง! เลือดปัจจุบันเหลือ: " + currentHealth);
+
+        // คำนวณเป้าหมายหลอดเลือดใหม่ เพื่อให้ Update ค่อยๆ เลื่อนหลอดเลือดไปหาจุดนี้
+        targetSliderValue = (float)currentHealth / maxHealth;
 
         if (currentHealth <= 0)
         {
@@ -66,6 +78,6 @@ public class BossController02 : MonoBehaviour
     void Die()
     {
         Debug.Log("💀 บอสพ่ายแพ้แล้ว!");
-        gameObject.SetActive(false); // ซ่อนบอส
+        gameObject.SetActive(false);
     }
 }
