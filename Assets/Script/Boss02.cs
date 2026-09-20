@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement; // นำเข้า SceneManager สำหรับเปลี่ยน Scene
 using TMPro;
 
 public class Boss02 : MonoBehaviour
@@ -106,7 +107,11 @@ public class Boss02 : MonoBehaviour
     void Die()
     {
         Debug.Log("💀 บอสพ่ายแพ้แล้ว!");
-        Time.timeScale = 0f; // หยุดเกม
-        gameObject.SetActive(false);
+
+        // คืนค่าเวลาในเกมเป็นปกติก่อนเปลี่ยนฉาก
+        Time.timeScale = 1f;
+
+        // โหลดเข้า Scene ฉากจบที่ชื่อ Ending ทันที
+        SceneManager.LoadScene("Ending");
     }
 }
