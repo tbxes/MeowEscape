@@ -64,11 +64,20 @@ public class Intro : MonoBehaviour
         if (startPromptPanel) startPromptPanel.SetActive(true); // แสดง Panel เมื่อพิมพ์จบประโยค
     }
 
-    public void StartGame()
+    void StartGame()
     {
-        isGameStarted = hasSeenIntro = true;
-        StopAllCoroutines();
-        if (introPanel) introPanel.SetActive(false);
-        Time.timeScale = 1f; // คืนค่าเวลาให้เกมวิ่งปกติ
+        hasSeenIntro = true; // แก้ไขจาก hasPlayedIntro ให้ตรงกับตัวแปรที่ประกาศไว้ข้างบน
+        isGameStarted = true; // บันทึกสถานะว่าเริ่มเล่นเกมแล้ว
+
+        if (introPanel != null) introPanel.SetActive(false);
+        Time.timeScale = 1f;
+
+        // 🎵 สั่งเริ่มเล่นเพลง BGM ใน Scene01 ทันทีที่กดผ่าน Intro!
+        if (Scene01Audio.Instance != null)
+        {
+            Scene01Audio.Instance.StartBGM();
+        }
+
+        this.enabled = false;
     }
 }

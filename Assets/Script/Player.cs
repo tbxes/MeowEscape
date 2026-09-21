@@ -14,7 +14,7 @@ public class Player : MonoBehaviour
 
     private Rigidbody rb;
     private float currentSpeed;
-  
+
     private bool isGameOver = false;
     private bool wasTimePaused = true; // ตัวแปรเช็คสถานะการหยุดเวลา
 
@@ -32,34 +32,37 @@ public class Player : MonoBehaviour
     {
         if (isGameOver) return;
 
-                if (Time.timeScale == 0f)
+        if (Time.timeScale == 0f)
         {
             wasTimePaused = true;
             return;
         }
-                
+
         if (wasTimePaused)
         {
             wasTimePaused = false;
             return;
         }
 
-     
         bool isGrounded = transform.position.y <= (groundY + 0.1f);
 
-       
+        // ระบบกระโดด
         if (isGrounded && Keyboard.current != null)
         {
             if (Keyboard.current.spaceKey.wasPressedThisFrame)
             {
                 rb.linearVelocity = new Vector3(rb.linearVelocity.x, jumpForce, rb.linearVelocity.z);
+
+                // 🔊 เล่นเสียงกระโดด
+                if (Scene01Audio.Instance != null)
+                {
+                    Scene01Audio.Instance.PlayJump();
+                }
             }
         }
 
-       
         float newZ = transform.position.z + (currentSpeed * Time.deltaTime);
 
-        
         float horizontalInput = 0f;
         if (Keyboard.current != null)
         {
@@ -73,14 +76,11 @@ public class Player : MonoBehaviour
             }
         }
 
-       
         float newX = transform.position.x + (horizontalInput * laneSpeed * Time.deltaTime);
 
-        
         transform.position = new Vector3(newX, transform.position.y, newZ);
     }
 
-    
     private void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("Boss"))
@@ -89,13 +89,17 @@ public class Player : MonoBehaviour
         }
     }
 
-
-
     void GameOver()
     {
         isGameOver = true;
 
-        
+        // 🔊 หยุดเพลง BGM และเล่นเสียงโดนจับ/เกมโอเวอร์
+        if (Scene01Audio.Instance != null)
+        {
+            Scene01Audio.Instance.StopBGM();
+            Scene01Audio.Instance.PlayCaught();
+        }
+
         if (UIManager.Instance != null)
         {
             UIManager.Instance.TriggerGameOver();
