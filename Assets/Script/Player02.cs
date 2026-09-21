@@ -1,7 +1,8 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
-using UnityEngine.SceneManagement; // นำเข้า SceneManager สำหรับ Restart ฉาก
+using UnityEngine.SceneManagement;
+using UnityEngine.EventSystems; // นำเข้าสำหรับเช็คการกด UI
 using TMPro;
 
 public class PlayerMovement02 : MonoBehaviour
@@ -22,18 +23,16 @@ public class PlayerMovement02 : MonoBehaviour
     public TMP_Text playerHealthText;
 
     [Header("Game Over UI")]
-    public GameObject gameOverPanel; // ลาก GameOverPanel มาใส่ตรงนี้
-    public Button restartButton;     // ลาก RestartButton มาใส่ตรงนี้
+    public GameObject gameOverPanel;
+    public Button restartButton;
 
     void Start()
     {
         currentHealth = maxHealth;
         UpdateHealthUI();
 
-        // ซ่อนหน้า GameOverPanel ไว้ตอนเริ่มเกม
         if (gameOverPanel != null) gameOverPanel.SetActive(false);
 
-        // ผูกคำสั่งปุ่ม Restart
         if (restartButton != null)
         {
             restartButton.onClick.AddListener(RestartGame);
@@ -53,9 +52,15 @@ public class PlayerMovement02 : MonoBehaviour
         }
         transform.Translate(Vector3.right * moveInput * moveSpeed * Time.deltaTime);
 
-        // 2. ยิงปืน
+        // 2. ยิงปืน (เช็คว่าไม่ได้กำลังคลิกปุ่ม UI อยู่)
         if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame && Time.time >= nextFireTime)
         {
+            // ตรวจสอบว่าเมาส์ไม่ได้คลิกอยู่บน UI (เช่น ปุ่ม Next หน้า Intro)
+            if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
+            {
+                return;
+            }
+
             Shoot();
             nextFireTime = Time.time + fireCooldown;
         }
@@ -66,15 +71,27 @@ public class PlayerMovement02 : MonoBehaviour
         if (bulletPrefab && gunMuzzle)
         {
             Instantiate(bulletPrefab, gunMuzzle.position, gunMuzzle.rotation);
+
+            // 🔊 เล่นเสียงยิงปืน
+            if (Scene02Audio.Instance != null)
+            {
+                Scene02Audio.Instance.PlayShooting();
+            }
         }
     }
 
-    void OnTriggerEnter(Collider other)
+    private void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("BossBullet"))
         {
             currentHealth -= 1;
             if (currentHealth < 0) currentHealth = 0;
+
+            // 🔊 เล่นเสียงโดนกระสุนมะเขือเทศ
+            if (Scene02Audio.Instance != null)
+            {
+                Scene02Audio.Instance.PlayTomatoHit();
+            }
 
             UpdateHealthUI();
             Destroy(other.gameObject);
@@ -103,6 +120,13 @@ public class PlayerMovement02 : MonoBehaviour
     {
         Debug.Log("💀 Game Over!");
 
+        // 🔊 หยุดเพลง BGM และเล่นเสียงตาย
+        if (Scene02Audio.Instance != null)
+        {
+            Scene02Audio.Instance.StopBGM();
+            Scene02Audio.Instance.PlayDead();
+        }
+
         // ซ่อนโมเดล Player
         Renderer[] renderers = GetComponentsInChildren<Renderer>();
         foreach (Renderer r in renderers)
@@ -112,17 +136,15 @@ public class PlayerMovement02 : MonoBehaviour
 
         if (GetComponent<Collider>()) GetComponent<Collider>().enabled = false;
 
-        // แสดงหน้า GameOverPanel และหยุดเวลาในเกม
         if (gameOverPanel != null) gameOverPanel.SetActive(true);
         Time.timeScale = 0f;
 
         this.enabled = false;
     }
 
-    // ฟังก์ชันสำหรับเริ่มเกมใหม่
     public void RestartGame()
     {
-        Time.timeScale = 1f; // คืนค่าเวลาในเกมเป็นปกติก่อนโหลดฉากใหม่
-        SceneManager.LoadScene(SceneManager.GetActiveScene().name); // โหลดฉากปัจจุบันใหม่
+        Time.timeScale = 1f;
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 }

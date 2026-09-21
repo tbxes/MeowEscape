@@ -1,6 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.SceneManagement; // นำเข้า SceneManager สำหรับเปลี่ยน Scene
+using UnityEngine.SceneManagement;
 using TMPro;
 
 public class Boss02 : MonoBehaviour
@@ -35,10 +35,8 @@ public class Boss02 : MonoBehaviour
 
     void Update()
     {
-        // อนิเมชันหลอดเลือดสไลด์ลดลง
         if (bossHealthSlider != null)
         {
-            // ถ้าเป้าหมายคือ 0 ให้เซ็ตเป็น 0 ทันที ไม่ค้างติ่ง Lerp
             if (targetSliderValue <= 0f)
             {
                 bossHealthSlider.value = 0f;
@@ -49,7 +47,6 @@ public class Boss02 : MonoBehaviour
             }
         }
 
-        // นับเวลาสุ่มยิงกระสุน (ทำงานเฉพาะตอนเกมยังไม่หยุด)
         if (Time.timeScale > 0f)
         {
             attackTimer -= Time.deltaTime;
@@ -84,13 +81,12 @@ public class Boss02 : MonoBehaviour
 
         targetSliderValue = (float)currentHealth / maxHealth;
 
-        // อัปเดตข้อความตัวเลขเมื่อโดนยิง
         UpdateHealthUI();
 
         if (currentHealth <= 0)
         {
             targetSliderValue = 0f;
-            if (bossHealthSlider != null) bossHealthSlider.value = 0f; // เซ็ตหลอดเลือดเป็น 0 ทันที
+            if (bossHealthSlider != null) bossHealthSlider.value = 0f;
 
             Die();
         }
@@ -108,10 +104,14 @@ public class Boss02 : MonoBehaviour
     {
         Debug.Log("💀 บอสพ่ายแพ้แล้ว!");
 
-        // คืนค่าเวลาในเกมเป็นปกติก่อนเปลี่ยนฉาก
-        Time.timeScale = 1f;
+        // 🔊 หยุดเพลง BGM และเล่นเสียง Victory ก่อนเปลี่ยนเข้าฉาก Ending
+        if (Scene02Audio.Instance != null)
+        {
+            Scene02Audio.Instance.StopBGM();
+            Scene02Audio.Instance.PlayVictory();
+        }
 
-        // โหลดเข้า Scene ฉากจบที่ชื่อ Ending ทันที
+        Time.timeScale = 1f;
         SceneManager.LoadScene("Ending");
     }
 }

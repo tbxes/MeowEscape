@@ -23,8 +23,14 @@ public class IntroManager02 : MonoBehaviour
 
     void Start()
     {
+        // ถ้าเคยดู Intro ไปแล้ว (เช่น ตอนกด Restart) ให้เล่น BGM แล้วข้าม Intro ทันที
         if (hasPlayedIntro)
         {
+            if (Scene02Audio.Instance != null)
+            {
+                Scene02Audio.Instance.StartBGM();
+            }
+
             SkipIntro();
             return;
         }
@@ -109,6 +115,13 @@ public class IntroManager02 : MonoBehaviour
         hasPlayedIntro = true;
         if (introPanel != null) introPanel.SetActive(false);
         Time.timeScale = 1f;
+
+        // 🎵 สั่งเริ่มเล่น BGM Scene02
+        if (Scene02Audio.Instance != null)
+        {
+            Scene02Audio.Instance.StartBGM();
+        }
+
         this.enabled = false;
     }
 
@@ -116,6 +129,13 @@ public class IntroManager02 : MonoBehaviour
     {
         if (introPanel != null) introPanel.SetActive(false);
         Time.timeScale = 1f;
+
+        // 🎵 สั่งเริ่มเล่น BGM กรณีข้าม Intro
+        if (Scene02Audio.Instance != null)
+        {
+            Scene02Audio.Instance.StartBGM();
+        }
+
         this.enabled = false;
     }
 }
