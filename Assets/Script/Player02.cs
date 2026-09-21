@@ -145,6 +145,10 @@ public class PlayerMovement02 : MonoBehaviour
     public void RestartGame()
     {
         Time.timeScale = 1f;
+
+        // 🎵 กำหนดเป็น true ค้างไว้ เพื่อให้เมื่อ Restart แล้วจะข้ามหน้า Intro ทันที แต่เพลง BGM ยังเริ่มใหม่ได้
+        IntroManager02.hasPlayedIntro = true;
+
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 }

@@ -31,9 +31,14 @@ public class Scene02Audio : MonoBehaviour
 
     private void Start()
     {
-        // หยุดเพลง BGM ไว้ก่อน รอเริ่มเล่นตอนผ่าน Intro02
-        if (musicSource != null)
+        // ถ้าเคยผ่าน Intro ไปแล้ว (เช่น กรณีโหลดฉากซ้ำ) ให้เริ่มเพลง BGM ทันที
+        if (IntroManager02.hasPlayedIntro)
         {
+            StartBGM();
+        }
+        else if (musicSource != null)
+        {
+            // หยุดเพลง BGM ไว้ก่อน รอเริ่มเล่นตอนผ่าน Intro02
             musicSource.Stop();
         }
     }
