@@ -2036,6 +2036,11 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 822168527}
   m_CullTransparentMesh: 1
+--- !u!23 &855538313 stripped
+MeshRenderer:
+  m_CorrespondingSourceObject: {fileID: 3926725488710133209, guid: 6e89a0c67f68f93408ebb0d04f5d3bd3, type: 3}
+  m_PrefabInstance: {fileID: 295896253781782202}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &863326950
 GameObject:
   m_ObjectHideFlags: 0
@@ -4667,6 +4672,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Boss02
       objectReference: {fileID: 0}
+    - target: {fileID: 3926725488710133209, guid: 6e89a0c67f68f93408ebb0d04f5d3bd3, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 5339789229136229380, guid: 6e89a0c67f68f93408ebb0d04f5d3bd3, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -4715,6 +4724,10 @@ PrefabInstance:
       propertyPath: healthText
       value: 
       objectReference: {fileID: 551643836}
+    - target: {fileID: 9031562739421432043, guid: 6e89a0c67f68f93408ebb0d04f5d3bd3, type: 3}
+      propertyPath: bossRenderer
+      value: 
+      objectReference: {fileID: 855538313}
     - target: {fileID: 9031562739421432043, guid: 6e89a0c67f68f93408ebb0d04f5d3bd3, type: 3}
       propertyPath: bossHealthSlider
       value: 

@@ -1,32 +1,47 @@
 using UnityEngine;
 
-public class Bullet02 : MonoBehaviour
+public class Bullet : MonoBehaviour
 {
-    public float speed = 30f;
-    public float lifetime = 3f;
+    public int damage = 1;
+    public float speed = 20f;
+    public float lifeTime = 3f;
 
     void Start()
     {
-        Destroy(gameObject, lifetime);
+        // ทำลายกระสุนอัตโนมัติถ้ายิงไม่โดนอะไรเลยภายในเวลาที่กำหนด
+        Destroy(gameObject, lifeTime);
     }
 
     void Update()
     {
+        // ให้กระสุนพุ่งไปข้างหน้า
         transform.Translate(Vector3.forward * speed * Time.deltaTime);
     }
 
-    void OnTriggerEnter(Collider other)
+    private void OnCollisionEnter(Collision collision)
     {
-        Debug.Log("กระสุนชนวัตถุชื่อ: " + other.gameObject.name + " | Tag คือ: " + other.tag);
+        // เช็คว่าชนบอสหรือไม่
+        Boss02 boss = collision.gameObject.GetComponent<Boss02>();
 
-        if (other.CompareTag("Boss02"))
+        if (boss != null)
         {
-            Debug.Log(">>> ชนเข้ากับ Boss02 สำเร็จแล้วจ้า! <<<");
+            // เรียกฟังก์ชันลดเลือดและทำเอฟเฟกต์ตัวแดงของบอส
+            boss.TakeDamage(damage);
 
-            // สั่งเรียกใช้ฟังก์ชัน TakeDamage ในทุกสคริปต์ที่อยู่บนตัวบอสทันที
-            other.SendMessage("TakeDamage", 1, SendMessageOptions.DontRequireReceiver);
+            // ทำลายกระสุนทิ้งเมื่อยิงโดนบอส
+            Destroy(gameObject);
+        }
+    }
 
-            Destroy(gameObject); // ทำลายกระสุน
+    private void OnTriggerEnter(Collider other)
+    {
+        // กรณีที่ Collider ของกระสุนถูกตั้งค่าเป็น Is Trigger
+        Boss02 boss = other.GetComponent<Boss02>();
+
+        if (boss != null)
+        {
+            boss.TakeDamage(damage);
+            Destroy(gameObject);
         }
     }
 }
