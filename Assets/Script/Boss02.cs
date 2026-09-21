@@ -30,7 +30,9 @@ public class Boss02 : MonoBehaviour
         if (bossHealthSlider != null) bossHealthSlider.value = 1f;
 
         UpdateHealthUI();
-        SetRandomInterval();
+
+        // เซ็ตให้นับเวลาเป็น 0 ทันที เพื่อให้เริ่มยิงนัดแรกทันทีที่เข้าเกม!
+        attackTimer = 0f;
     }
 
     void Update()
